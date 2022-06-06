@@ -1,0 +1,129 @@
+service: sls-image-s3
+frameworkVersion: "3"
+plugins:
+  - serverless-webpack
+provider:
+  name: aws
+  runtime: nodejs14.x
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    NODE_OPTIONS: --enable-source-maps --stack-trace-limit=1000
+    BUCKET_NAME: ${self:custom.bucketName}
+    USER_POOL_ID: { Ref: UserPool }
+    CLIENT_ID: { Ref: UserClient }
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+        - cognito-idp:*
+      Resource: "*"
+
+functions:
+  signup:
+    handler: src/functions/signup/handler.main
+    events:
+      - http:
+          path: /signup
+          method: post
+          cors: true
+
+  login:
+    handler: src/functions/login/handler.main
+    events:
+      - http:
+          path: /login
+          method: post
+          cors: true
+
+  getPresignedUrl:
+    handler: src/functions/getPresignedUrl/handler.main
+    events:
+      - http:
+          path: /getPresignedUrl
+          method: get
+          cors: true
+          authorizer:
+            name: image-upload-authorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
+
+  deleteImage:
+    handler: src/functions/deleteImage/handler.main
+    events:
+      - http:
+          path: /deleteImage/{key}
+          method: delete
+          cors: true
+          authorizer:
+            name: image-upload-authorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
+
+  getImages:
+    handler: src/functions/getImages/handler.main
+    events:
+      - http:
+          path: /getImages
+          method: get
+          cors: true
+          authorizer:
+            name: image-upload-authorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
+    
+# package:
+#   individually: true
+custom:
+  bucketName: upload-image-to-s3-bucket
+  webpack:
+    webpackConfig: webpack.config.ts
+    includeModules: true
+    packager: npm
+
+resources:
+  Resources:
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+        AccessControl: PublicRead
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: upload-image-to-s3-pool
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: true
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 6
+        AutoVerifiedAttributes: ['email']
+    UserClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: upload-image-to-s3-client
+        GenerateSecret: false
+        UserPoolId: { Ref: UserPool }
+        AccessTokenValidity: 5
+        IdTokenValidity: 5
+        ExplicitAuthFlows:
+          - "ADMIN_NO_SRP_AUTH"
