@@ -14,11 +14,13 @@ provider:
     BUCKET_NAME: ${self:custom.bucketName}
     USER_POOL_ID: { Ref: UserPool }
     CLIENT_ID: { Ref: UserClient }
+    TABLE_NAME: ${self:custom.tableName}
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:*
         - cognito-idp:*
+        - dynamodb:*
       Resource: "*"
 
 functions:
@@ -88,11 +90,20 @@ functions:
                 - Arn
             claims:
               - email
+
+  updateDb:
+    handler: src/functions/updateDb/handler.main
+    events:
+      - s3:
+          bucket: ${self:custom.bucketName}
+          event: s3:ObjectCreated:Post
+          existing: true
     
 # package:
 #   individually: true
 custom:
   bucketName: upload-image-to-s3-bucket
+  tableName: users-files
   webpack:
     webpackConfig: webpack.config.ts
     includeModules: true
@@ -127,3 +138,14 @@ resources:
         IdTokenValidity: 5
         ExplicitAuthFlows:
           - "ADMIN_NO_SRP_AUTH"
+    DynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

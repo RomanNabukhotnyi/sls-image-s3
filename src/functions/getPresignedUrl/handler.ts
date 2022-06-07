@@ -9,7 +9,7 @@ const S3 = new AWS.S3();
 const getPresignedUrl = async (event:  APIGatewayProxyEvent) => {
     const email = event.requestContext.authorizer.claims.email;
     const key = `${email}/${event.queryStringParameters?.key ?? uuid()}`;
-    const url = S3.createPresignedPost({
+    const post = S3.createPresignedPost({
         Bucket: process.env.BUCKET_NAME,
         Conditions: [
             ['starts-with', '$Content-Type', 'image/'],
@@ -18,9 +18,8 @@ const getPresignedUrl = async (event:  APIGatewayProxyEvent) => {
             key,
         },
     });
-
     return {
-        url,
+        post,
     };
 };
 
