@@ -2,7 +2,8 @@ import middy from '@middy/core';
 import middyJsonBodyParser from '@middy/http-json-body-parser';
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Handler } from 'aws-lambda';
 import Joi from 'joi';
-import { fromJson } from 'json-joi-converter';
+// import { fromJson } from 'json-joi-converter';
+import enjoi from 'enjoi';
 
 const middleware = (schema: Joi.Schema):middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> => {
     const requestMiddleware: middy.MiddlewareFn<APIGatewayProxyEvent, APIGatewayProxyResult> = async (request) => {
@@ -32,6 +33,6 @@ const middleware = (schema: Joi.Schema):middy.MiddlewareObj<APIGatewayProxyEvent
     };
 };
 
-export const middyfy = (handler: Handler, schema?) => {
-    return middy(handler).use(middyJsonBodyParser()).use(middleware(fromJson(schema)));
+export const middyfy = (handler: Handler, schema = {}) => {
+    return middy(handler).use(middyJsonBodyParser()).use(middleware(enjoi.schema(schema)));
 };

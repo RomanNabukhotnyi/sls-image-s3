@@ -3,7 +3,7 @@ export default {
     properties: {
         email:{
             type: 'string',
-            pattern: 'email',
+            format: 'email',
         },
         password:{
             type: 'string',

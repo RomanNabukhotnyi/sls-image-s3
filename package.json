@@ -14,7 +14,9 @@
     "@middy/core": "^2.5.3",
     "@middy/http-json-body-parser": "^2.5.3",
     "aws-sdk": "^2.1148.0",
+    "enjoi": "^9.0.1",
     "joi": "^17.6.0",
+    "joi-to-json-schema": "^5.1.0",
     "json-joi-converter": "^17.2.1-f",
     "uuid": "^8.3.2"
   },

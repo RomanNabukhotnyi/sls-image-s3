@@ -3,7 +3,7 @@ export default {
     properties: {
         email:{
             type: 'string',
-            pattern: 'email',
+            format: 'email',
         },
         password:{
             type: 'string',
@@ -13,3 +13,10 @@ export default {
     },
     required: ['email', 'password'],
 } as const;
+
+// import joi from 'joi';
+
+// export default joi.object({
+//     email: joi.string().email().max(100).required(),
+//     password: joi.string().min(6).max(15).disallow(' ', '\"', '\'').required(),
+// });

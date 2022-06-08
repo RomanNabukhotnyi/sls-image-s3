@@ -6,7 +6,7 @@ import { Dynamo } from '../../libs/db';
 const getImages = async (event: APIGatewayProxyEvent) => {
     const email = event.requestContext.authorizer.claims.email;
     const files = await Dynamo.getFiles(email);
-    if (files) {
+    if (files && files.length != 0) {
         return {
             files,
         };

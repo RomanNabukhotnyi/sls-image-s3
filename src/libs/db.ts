@@ -10,17 +10,19 @@ export const Dynamo = {
                 email,
             },
         }).promise();
-        if (user.Item) {
-            await documentClient.update({
-                TableName: process.env.TABLE_NAME,
-                Key: {
-                    email, 
-                },
-                UpdateExpression: 'set files = list_append(files, :file)',
-                ExpressionAttributeValues: {
-                    ':file': [file],
-                },
-            }).promise();
+        if (user.Item) { 
+            if (!user.Item?.files.some((f: { key: string; }) => f.key === file.key)) {
+                await documentClient.update({
+                    TableName: process.env.TABLE_NAME,
+                    Key: {
+                        email, 
+                    },
+                    UpdateExpression: 'set files = list_append(files, :file)',
+                    ExpressionAttributeValues: {
+                        ':file': [file],
+                    },
+                }).promise();
+            }
         } else {
             await documentClient.put({
                 TableName: process.env.TABLE_NAME,
@@ -31,7 +33,7 @@ export const Dynamo = {
             }).promise();
         }
     },
-    getFiles: async (email: string) => {
+    getFiles: async (email: string): Promise<{ key: string, url: string }[] | undefined> => {
         const user = await documentClient.get({
             TableName: process.env.TABLE_NAME,
             Key: {
@@ -46,10 +48,7 @@ export const Dynamo = {
             Key: {
                 email, 
             },
-            UpdateExpression: 'remove files[:index]',
-            ExpressionAttributeValues: {
-                ':index': index,
-            },
+            UpdateExpression: `remove files[${index}]`,
         }).promise();
     },
 };
