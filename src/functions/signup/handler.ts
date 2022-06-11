@@ -9,34 +9,22 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 
 const signup: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
     const { email, password } = event.body;
-    const userPoolId = process.env.USER_POOL_ID;
 
-    const { User } = await cognito.adminCreateUser({
-        UserPoolId: userPoolId,
+    let result = await  cognito.signUp({
+        ClientId: process.env.CLIENT_ID,
+        Password: password,
         Username: email,
         UserAttributes: [
             {
                 Name: 'email',
                 Value: email,
             },
-            {
-                Name: 'email_verified',
-                Value: 'true',
-            },
         ],
-        MessageAction: 'SUPPRESS',
     }).promise();
 
-    if (User) {
-        await cognito.adminSetUserPassword({
-            Password: password,
-            UserPoolId: userPoolId,
-            Username: email,
-            Permanent: true,
-        }).promise();
-    }
     return {
         message: 'User registration successful',
+        result,
     };
 };
 

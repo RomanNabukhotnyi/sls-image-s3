@@ -9,12 +9,10 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 
 const login: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
     const { email, password } = event.body;
-    const userPoolId = process.env.USER_POOL_ID;
     const clientId = process.env.CLIENT_ID;
 
-    const { AuthenticationResult } = await cognito.adminInitiateAuth({
-        AuthFlow: 'ADMIN_NO_SRP_AUTH',
-        UserPoolId: userPoolId,
+    const { AuthenticationResult } = await cognito.initiateAuth({
+        AuthFlow: 'USER_PASSWORD_AUTH',
         ClientId: clientId,
         AuthParameters: {
             USERNAME: email,

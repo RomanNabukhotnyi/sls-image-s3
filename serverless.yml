@@ -24,6 +24,14 @@ provider:
       Resource: "*"
 
 functions:
+  preSignup:
+    handler: src/functions/preSignup/handler.main
+    events:
+      - cognitoUserPool:
+          pool: ${self:custom.userPoolName}
+          trigger: PreSignUp
+          existing: true
+
   signup:
     handler: src/functions/signup/handler.main
     events:
@@ -104,6 +112,7 @@ functions:
 custom:
   bucketName: upload-image-to-s3-bucket
   tableName: users-files
+  userPoolName: upload-image-to-s3-pool
   webpack:
     webpackConfig: webpack.config.ts
     includeModules: true
@@ -119,7 +128,7 @@ resources:
     UserPool:
       Type: AWS::Cognito::UserPool
       Properties:
-        UserPoolName: upload-image-to-s3-pool
+        UserPoolName: ${self:custom.userPoolName}
         Schema:
           - Name: email
             Required: true
@@ -137,7 +146,7 @@ resources:
         AccessTokenValidity: 5
         IdTokenValidity: 5
         ExplicitAuthFlows:
-          - "ADMIN_NO_SRP_AUTH"
+          - "USER_PASSWORD_AUTH"
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:

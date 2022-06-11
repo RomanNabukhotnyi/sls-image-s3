@@ -18,9 +18,7 @@ const getPresignedUrl = async (event:  APIGatewayProxyEvent) => {
             key,
         },
     });
-    return {
-        post,
-    };
+    return post;
 };
 
 export const main = middyfy(getPresignedUrl);

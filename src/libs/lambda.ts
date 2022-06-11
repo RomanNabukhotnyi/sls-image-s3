@@ -18,10 +18,10 @@ const middleware = (schema: Joi.Schema):middy.MiddlewareObj<APIGatewayProxyEvent
         };
     };
     const onErrorMiddleware: middy.MiddlewareFn<APIGatewayProxyEvent, APIGatewayProxyResult> = async (request) => {
+        console.log(request);
         request.response = {
             statusCode: 400,
             body: JSON.stringify({
-                ...request.response,
                 error: request.error,
             }),
         };
