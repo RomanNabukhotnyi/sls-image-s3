@@ -4,7 +4,8 @@
     ],
     "plugins": ["import"],
     "parserOptions": {
-        "project": ["tsconfig.json"]
+        "project": ["tsconfig.json"],
+        "tsconfigRootDir": "."
     },
     "rules": {
         "indent": "off",
